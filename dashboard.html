@@ -1,0 +1,186 @@
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+
+    <title>Dashboard</title>
+    <style>
+      a {
+        text-decoration: none;
+        font-weight: 500;
+        font-size: larger;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+          <img
+            src="lo-go.png"
+            alt=""
+            width="250"
+            height="50"
+            class="d-inline-block align-text-top"
+          />
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div
+          class="collapse navbar-collapse"
+          style="margin-left: 18rem; padding-left: 1rem"
+          id="navbarSupportedContent"
+        >
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" href="addpage.html">Add Page</a>
+            </li>
+            <!-- <li class="nav-item">
+                <a class="nav-link" href="#">Edit Page</a>
+              </li> -->
+            <li class="nav-item" style="float: right">
+              <a class="nav-link" onclick="logmeout()">Logout</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="container">
+      <h1 class="pt-4 mt-4 text-center">Welcome <span id="userName"></span></h1>
+      <table class="table" style="box-shadow: 8px 7px 10px">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">title</th>
+            <th scope="col">Description</th>
+            <th scope="col" colspan="2">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="blogTableBody"></tbody>
+      </table>
+    </div>
+    <!-- Footer -->
+    <div class="container-fluid fixed-bottom">
+      <footer
+        class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top"
+      >
+        <div class="col-md-4 d-flex align-items-center">
+          <a
+            href="/"
+            class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
+          >
+            <svg class="bi" width="30" height="24">
+              <use xlink:href="#bootstrap" />
+            </svg>
+          </a>
+          <span class="text-muted">&copy; 2021 Company, Inc</span>
+        </div>
+      </footer>
+    </div>
+    <!-- Footer -->
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+      function logmeout()
+      {
+        localStorage.clear();
+        window.location.href = "login.html";
+      }
+      document.addEventListener("DOMContentLoaded", async () => {
+        const userName = localStorage.getItem("name");
+        const email = localStorage.getItem("email");
+        if(!email)
+        {
+          window.location.href = "auth.html";
+        }
+
+        if (userName) {
+          document.getElementById("userName").textContent = userName;
+        }
+
+        try {
+          const email = localStorage.getItem("email");
+
+          const response = await axios.get(
+            `http://localhost:5000/request/display-blog?email=${email}`
+          );
+
+          const blogEntries = response.data;
+          const tableBody = document.getElementById("blogTableBody");
+
+          blogEntries.forEach((entry, index) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+          <th scope="row">${index + 1}</th>
+          <td>${entry.title || "N/A"}</td>
+          <td>${entry.description || "N/A"}</td>
+          <td><button class="edit-btn btn btn-primary" data-entry-id="${
+            entry._id
+          }">Edit</button></td>
+          <td><button class="delete-btn btn btn-danger" data-entry-id="${
+            entry._id
+          }">Delete</button></td>
+        `;
+            tableBody.appendChild(row);
+          });
+
+          const deleteButtons = document.querySelectorAll(".delete-btn");
+          deleteButtons.forEach((button) => {
+            button.addEventListener("click", async () => {
+              const entryId = button.getAttribute("data-entry-id");
+
+              try {
+                const deleteResponse = await axios.delete(
+                  `http://localhost:5000/request/delete-blog/${entryId}`
+                );
+
+                console.log("Blog entry deleted:", deleteResponse);
+
+                button.closest("tr").remove();
+              } catch (deleteError) {
+                console.error("Error deleting blog entry:", deleteError);
+              }
+            });
+          });
+
+          const editButtons = document.querySelectorAll(".edit-btn");
+          editButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+              const entryId = button.getAttribute("data-entry-id");
+
+              window.location.href = `editpage.html?entryId=${entryId}`;
+            });
+          });
+        } catch (error) {
+          console.error("Error fetching blog data:", error);
+        }
+      });
+    </script>
+
+    <!-- ... (your existing HTML code) ... -->
+  </body>
+</html>

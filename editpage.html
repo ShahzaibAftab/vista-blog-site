@@ -1,0 +1,242 @@
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+
+    <title>Index</title>
+    <style>
+      a {
+        text-decoration: none;
+        font-weight: 500;
+        font-size: larger;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+          <img
+            src="lo-go.png"
+            alt=""
+            width="250"
+            height="50"
+            class="d-inline-block align-text-top"
+          />
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div
+          class="collapse navbar-collapse"
+          style="margin-left: 18rem; padding-left: 1rem"
+          id="navbarSupportedContent"
+        >
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" href="dashboard.html">Home</a>
+            </li>
+            <li class="nav-item" style="margin-inline: 100px">
+              <a class="nav-link" href="dashboard.html"
+                ><span id="userName"></span
+              ></a>
+            </li>
+            <!-- <li class="nav-item">
+                <a class="nav-link" href="#">Edit Page</a>
+              </li> -->
+            <li class="nav-item">
+              <a class="nav-link" onclick="logmeout()">Logout</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="container mt-4">
+      <form>
+        <div class="form-floating mb-2">
+          <input
+            type="text"
+            class="form-control"
+            id="title"
+            placeholder="Blog Title"
+          />
+          <label for="title">Title</label>
+        </div>
+        <div class="form-group mb-2 d-flex">
+          <label class="pt-2 ml-4" for="">Image</label>
+          <input type="file" accept="image/*" class="form-control" id="image" />
+        </div>
+        <label for="description" class="mt-4"><b>Add Discription</b></label>
+        <textarea
+          name="description"
+          class="form-control mt-4"
+          id="description"
+          cols="30"
+          rows="10"
+        ></textarea>
+        <center>
+          <button
+            type="button"
+            class="btn btn-primary mt-3"
+            onclick="updateBlog()"
+          >
+            Submit
+          </button>
+        </center>
+      </form>
+    </div>
+    <!-- Footer -->
+    <div class="container-fluid">
+      <footer
+        class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top"
+      >
+        <div class="col-md-4 d-flex align-items-center">
+          <a
+            href="/"
+            class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
+          >
+            <svg class="bi" width="30" height="24">
+              <use xlink:href="#bootstrap" />
+            </svg>
+          </a>
+          <span class="text-muted">&copy; 2021 Company, Inc</span>
+        </div>
+      </footer>
+    </div>
+    <!-- Footer -->
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+      const email = localStorage.getItem("email");
+      if (!email) {
+        window.location.href = "auth.html";
+      }
+      function logmeout() {
+        localStorage.clear();
+        window.location.href = "login.html";
+      }
+      function updateBlog() {
+        const title = document.getElementById("title").value;
+        const poster = document.getElementById("image").files[0];
+        const description = document.getElementById("description").value;
+        const email = localStorage.getItem("email");
+
+        const formData = new FormData();
+        formData.append("email", email);
+        formData.append("title", title);
+        formData.append("poster", poster);
+        formData.append("description", description);
+
+        const entryId = "your_entry_id";
+
+        axios
+          .put(
+            `http://localhost:5000/request/update-blog/${entryId}`,
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+              withCredentials: true,
+            }
+          )
+          .then((response) => {
+            console.log("Blog entry updated:", response.data);
+          })
+          .catch((error) => {
+            console.error(
+              "Error updating blog entry:",
+              error.response ? error.response.data : error.message
+            );
+          });
+      }
+      const entryId = getParameterByName("entryId");
+      console.log("Entry ID:", entryId);
+
+      function populateFormWithData(data) {
+        document.getElementById("title").value = data.title || "";
+        document.getElementById("image").value = data.image || "";
+        document.getElementById("description").value = data.description || "";
+      }
+      function getParameterByName(name, url) {
+        if (!url) url = window.location.href;
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+          results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return "";
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+      }
+
+      axios
+        .get(`http://localhost:5000/request/get-blog?entryId=${entryId}`)
+        .then((response) => {
+          populateFormWithData(response.data);
+        })
+        .catch((error) => {
+          console.error(
+            "Error fetching blog data:",
+            error.response ? error.response.data : error.message
+          );
+        });
+      function updateBlog() {
+        const title = document.getElementById("title").value;
+        const poster = document.getElementById("image").files[0];
+        const description = document.getElementById("description").value;
+        const email = localStorage.getItem("email");
+
+        const formData = new FormData();
+        formData.append("email", email);
+        formData.append("title", title);
+        formData.append("poster", poster);
+        formData.append("description", description);
+
+        console.log("put id", entryId);
+
+        axios
+          .put(
+            `http://localhost:5000/request/update-blog/${entryId}`,
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+              withCredentials: true,
+            }
+          )
+          .then((response) => {
+            console.log("Blog entry updated:", response.data);
+          })
+          .catch((error) => {
+            console.error(
+              "Error updating blog entry:",
+              error.response ? error.response.data : error.message
+            );
+          });
+      }
+    </script>
+  </body>
+</html>
